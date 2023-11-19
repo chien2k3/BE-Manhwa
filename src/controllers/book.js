@@ -36,6 +36,46 @@ const getBooks = async (req, res) => {
     });
   }
 };
+const getBooksByCategory = async (req, res) => {
+  try {
+    const categoryId = req.params.categoryId;
+
+    const {
+      _sort = "createdAt",
+      _order = "desc",
+      _page = 1,
+      _limit = 999,
+    } = req.query;
+
+    const options = {
+      page: _page,
+      limit: _limit,
+      sort: {
+        [_sort]: _order === "desc" ? 1 : -1,
+      },
+      populate: ["categoryId", "feedbacks"],
+    };
+
+    const books = await Book.paginate({ categoryId: categoryId }, options);
+
+    const newBooks = books.docs.filter((item) => item.isDelete == false);
+
+    if (!books) {
+      return res.json({
+        message: "Lấy danh sách thất bại",
+      });
+    }
+
+    return res.json({
+      message: "Lấy danh sách thành công.",
+      data: newBooks,
+    });
+  } catch (error) {
+    return res.json({
+      message: error,
+    });
+  }
+};
 
 const searchBooks = async (req, res) => {
   try {
@@ -159,4 +199,4 @@ const removeBook = async (req, res) => {
   }
 };
 
-export { getBooks, createBook, updateBook, getBook, removeBook , searchBooks };
+export { getBooks, createBook, updateBook, getBook, removeBook , searchBooks, getBooksByCategory };
